@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, Smile, Camera } from "lucide-react"
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Paperclip, Smile, Camera, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -13,7 +13,7 @@ interface Message {
   timestamp: string
   isOwn: boolean
   status: "sent" | "delivered" | "read"
-  type: "text" | "image" | "service"
+  type: "text" | "image" | "service" | "location"
 }
 
 interface ChatUser {
@@ -23,6 +23,7 @@ interface ChatUser {
   isOnline: boolean
   isProvider: boolean
   service?: string
+  rating?: number
 }
 
 const mockUser: ChatUser = {
@@ -32,12 +33,13 @@ const mockUser: ChatUser = {
   isOnline: true,
   isProvider: true,
   service: "Limpieza del hogar",
+  rating: 4.8,
 }
 
 const mockMessages: Message[] = [
   {
     id: "1",
-    text: "Hola, vi tu solicitud de servicio de limpieza",
+    text: "¡Hola! Vi tu solicitud de servicio de limpieza. Tengo disponibilidad para mañana.",
     timestamp: "10:00",
     isOwn: false,
     status: "read",
@@ -45,7 +47,7 @@ const mockMessages: Message[] = [
   },
   {
     id: "2",
-    text: "Hola María, sí necesito limpieza para mañana",
+    text: "Hola María, perfecto. ¿Podrías venir a las 2 PM?",
     timestamp: "10:02",
     isOwn: true,
     status: "read",
@@ -53,7 +55,7 @@ const mockMessages: Message[] = [
   },
   {
     id: "3",
-    text: "Perfecto, ¿a qué hora te viene bien?",
+    text: "Claro, sin problema. El costo sería S/. 80 por 4 horas de limpieza profunda.",
     timestamp: "10:03",
     isOwn: false,
     status: "read",
@@ -61,7 +63,7 @@ const mockMessages: Message[] = [
   },
   {
     id: "4",
-    text: "¿Podrías venir a las 2 PM?",
+    text: "Perfecto, ¿necesitas que proporcione productos de limpieza?",
     timestamp: "10:05",
     isOwn: true,
     status: "read",
@@ -69,7 +71,7 @@ const mockMessages: Message[] = [
   },
   {
     id: "5",
-    text: "Claro, sin problema. El costo sería S/. 80 por 4 horas",
+    text: "No te preocupes, yo traigo todos los productos necesarios. Solo necesito acceso a agua y electricidad.",
     timestamp: "10:07",
     isOwn: false,
     status: "read",
@@ -77,10 +79,18 @@ const mockMessages: Message[] = [
   },
   {
     id: "6",
-    text: "Perfecto, ¿necesitas que proporcione algo?",
+    text: "Excelente. Te comparto mi ubicación para que puedas llegar fácilmente.",
     timestamp: "10:10",
     isOwn: true,
     status: "delivered",
+    type: "location",
+  },
+  {
+    id: "7",
+    text: "Perfecto, ya tengo la dirección. Nos vemos mañana a las 2 PM. ¡Gracias!",
+    timestamp: "10:12",
+    isOwn: false,
+    status: "sent",
     type: "text",
   },
 ]
@@ -111,6 +121,23 @@ export default function ChatScreen() {
       }
       setMessages([...messages, message])
       setNewMessage("")
+
+      // Simular respuesta automática
+      setTimeout(() => {
+        setIsTyping(true)
+        setTimeout(() => {
+          setIsTyping(false)
+          const response: Message = {
+            id: (Date.now() + 1).toString(),
+            text: "¡Perfecto! Cualquier otra consulta, no dudes en escribirme.",
+            timestamp: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+            isOwn: false,
+            status: "sent",
+            type: "text",
+          }
+          setMessages((prev) => [...prev, response])
+        }, 2000)
+      }, 500)
     }
   }
 
@@ -125,6 +152,64 @@ export default function ChatScreen() {
       default:
         return ""
     }
+  }
+
+  const renderMessage = (message: Message) => {
+    if (message.type === "location") {
+      return (
+        <div className={`flex ${message.isOwn ? "justify-end" : "justify-start"}`}>
+          <div
+            className={`max-w-xs lg:max-w-md rounded-lg overflow-hidden ${
+              message.isOwn ? "bg-green-600 text-white" : "bg-white text-gray-900 shadow-sm border"
+            }`}
+          >
+            <div className="bg-gray-200 h-32 flex items-center justify-center">
+              <MapPin className="h-8 w-8 text-gray-500" />
+            </div>
+            <div className="p-3">
+              <p className="text-sm font-medium">Ubicación compartida</p>
+              <p className="text-xs opacity-75">Av. Principal 123, Lima</p>
+              <div
+                className={`flex items-center justify-end space-x-1 mt-2 ${
+                  message.isOwn ? "text-green-100" : "text-gray-500"
+                }`}
+              >
+                <span className="text-xs">{message.timestamp}</span>
+                {message.isOwn && (
+                  <span className={`text-xs ${message.status === "read" ? "text-blue-200" : "text-green-200"}`}>
+                    {getStatusIcon(message.status)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className={`flex ${message.isOwn ? "justify-end" : "justify-start"}`}>
+        <div
+          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+            message.isOwn ? "bg-green-600 text-white" : "bg-white text-gray-900 shadow-sm border"
+          }`}
+        >
+          <p className="text-sm">{message.text}</p>
+          <div
+            className={`flex items-center justify-end space-x-1 mt-1 ${
+              message.isOwn ? "text-green-100" : "text-gray-500"
+            }`}
+          >
+            <span className="text-xs">{message.timestamp}</span>
+            {message.isOwn && (
+              <span className={`text-xs ${message.status === "read" ? "text-blue-200" : "text-green-200"}`}>
+                {getStatusIcon(message.status)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -160,7 +245,10 @@ export default function ChatScreen() {
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-green-100">{mockUser.isOnline ? "En línea" : "Última vez hace 5 min"}</p>
+            <p className="text-sm text-green-100">
+              {mockUser.isOnline ? "En línea" : "Última vez hace 5 min"}
+              {mockUser.rating && <span className="ml-2">⭐ {mockUser.rating}</span>}
+            </p>
             {mockUser.service && <p className="text-xs text-green-200">{mockUser.service}</p>}
           </div>
 
@@ -181,27 +269,7 @@ export default function ChatScreen() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
         {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.isOwn ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.isOwn ? "bg-green-600 text-white" : "bg-white text-gray-900 shadow-sm border"
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-              <div
-                className={`flex items-center justify-end space-x-1 mt-1 ${
-                  message.isOwn ? "text-green-100" : "text-gray-500"
-                }`}
-              >
-                <span className="text-xs">{message.timestamp}</span>
-                {message.isOwn && (
-                  <span className={`text-xs ${message.status === "read" ? "text-blue-200" : "text-green-200"}`}>
-                    {getStatusIcon(message.status)}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          <div key={message.id}>{renderMessage(message)}</div>
         ))}
 
         {isTyping && (

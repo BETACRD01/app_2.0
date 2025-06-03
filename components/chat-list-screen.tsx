@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, MessageCircle, MoreVertical } from "lucide-react"
+import { Search, MessageCircle, MoreVertical, Phone, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -59,6 +59,16 @@ const mockChats: Chat[] = [
     isOnline: false,
     isProvider: true,
   },
+  {
+    id: "5",
+    name: "Carmen Silva",
+    avatar: "/placeholder.svg?height=40&width=40&text=CS",
+    lastMessage: "Muchas gracias, todo quedó perfecto",
+    timestamp: "2 días",
+    unreadCount: 0,
+    isOnline: true,
+    isProvider: false,
+  },
 ]
 
 export default function ChatListScreen() {
@@ -71,7 +81,7 @@ export default function ChatListScreen() {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-green-600 text-white p-4 shadow-lg">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold">Mensajes</h1>
           <Button variant="ghost" size="icon" className="text-white hover:bg-green-700">
             <MoreVertical className="h-5 w-5" />
@@ -79,7 +89,7 @@ export default function ChatListScreen() {
         </div>
 
         {/* Search Bar */}
-        <div className="mt-4 relative">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             placeholder="Buscar conversaciones..."
@@ -144,6 +154,15 @@ export default function ChatListScreen() {
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 truncate mt-1">{chat.lastMessage}</p>
+                  </div>
+
+                  <div className="flex space-x-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-green-600">
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-blue-600">
+                      <Video className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
